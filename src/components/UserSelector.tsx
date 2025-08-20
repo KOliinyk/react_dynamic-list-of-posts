@@ -1,40 +1,56 @@
-import React from 'react';
+import React, { ChangeEvent } from 'react';
+import { User } from '../types/User';
+import { Post } from '../types/Post';
 
-export const UserSelector: React.FC = () => {
+type UserSelectorProps = {
+  users: User[];
+  getPostsFromServer: (userId: number) => void;
+  selectedPerson: User | null;
+  setSelectedPerson: (user: User | null) => void;
+  setSelectedPost: (post: Post | null) => void;
+  setIsFormVisible: (value: boolean) => void;
+};
+
+export const UserSelector: React.FC<UserSelectorProps> = ({
+  users,
+  getPostsFromServer,
+  selectedPerson,
+  setSelectedPerson,
+  setSelectedPost,
+  setIsFormVisible,
+}) => {
+  const handleChange = (e: ChangeEvent<HTMLSelectElement>) => {
+    const userId = Number(e.target.value);
+    const user = users.find(u => u.id === userId) || null;
+
+    setSelectedPerson(user);
+    setSelectedPost(null);
+    setIsFormVisible(false);
+
+    if (user) {
+      getPostsFromServer(user.id);
+    }
+  };
+
   return (
-    <div data-cy="UserSelector" className="dropdown is-active">
-      <div className="dropdown-trigger">
-        <button
-          type="button"
-          className="button"
-          aria-haspopup="true"
-          aria-controls="dropdown-menu"
-        >
-          <span>Choose a user</span>
-
-          <span className="icon is-small">
-            <i className="fas fa-angle-down" aria-hidden="true" />
-          </span>
-        </button>
-      </div>
-
-      <div className="dropdown-menu" id="dropdown-menu" role="menu">
-        <div className="dropdown-content">
-          <a href="#user-1" className="dropdown-item">
-            Leanne Graham
-          </a>
-          <a href="#user-2" className="dropdown-item is-active">
-            Ervin Howell
-          </a>
-          <a href="#user-3" className="dropdown-item">
-            Clementine Bauch
-          </a>
-          <a href="#user-4" className="dropdown-item">
-            Patricia Lebsack
-          </a>
-          <a href="#user-5" className="dropdown-item">
-            Chelsey Dietrich
-          </a>
+    <div className="field">
+      <label htmlFor="user-select" className="label">
+        Select user
+      </label>
+      <div className="control">
+        <div className="select is-fullwidth">
+          <select
+            id="user-select"
+            value={selectedPerson?.id || ''}
+            onChange={handleChange}
+          >
+            <option value="">Choose a user</option>
+            {users.map(user => (
+              <option key={user.id} value={user.id}>
+                {user.name}
+              </option>
+            ))}
+          </select>
         </div>
       </div>
     </div>
