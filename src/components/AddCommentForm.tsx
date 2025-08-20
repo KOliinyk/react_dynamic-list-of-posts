@@ -1,127 +1,68 @@
-import { useState } from 'react';
-import { Comment } from '../types/Comment';
+import React, { useState } from 'react';
 
-type AddCommentFormProps = {
-  onAddComment: (comment: Omit<Comment, 'id'>) => void;
-  isLoading: boolean;
+type Props = {
+  onAdd: (name: string, email: string, body: string) => void;
 };
 
-export const AddCommentForm: React.FC<AddCommentFormProps> = ({
-  onAddComment,
-  isLoading,
-}) => {
+export const AddCommentForm: React.FC<Props> = ({ onAdd }) => {
   const [name, setName] = useState('');
   const [email, setEmail] = useState('');
   const [body, setBody] = useState('');
-  const [errors, setErrors] = useState<{
-    name?: string;
-    email?: string;
-    body?: string;
-  }>({});
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
 
-    const newErrors: typeof errors = {};
-
-    if (!name) {
-      newErrors.name = 'Name is required';
-    }
-
-    if (!email) {
-      newErrors.email = 'Email is required';
-    }
-
-    if (!body) {
-      newErrors.body = 'Comment text is required';
-    }
-
-    if (Object.keys(newErrors).length > 0) {
-      setErrors(newErrors);
-
+    if (!name.trim() || !email.trim() || !body.trim()) {
       return;
     }
 
-    onAddComment({ name, email, body });
-    setBody('');
-    setErrors({});
-  };
-
-  const handleClear = () => {
+    onAdd(name, email, body);
     setName('');
     setEmail('');
     setBody('');
-    setErrors({});
   };
 
   return (
-    <form onSubmit={handleSubmit}>
-      <div className="field">
-        <label htmlFor="comment-name" className="label">
+    <form className="add-comment-form" onSubmit={handleSubmit}>
+      <div>
+        <label htmlFor="comment-name" className="sr-only">
           Name
         </label>
-        <div className="control">
-          <input
-            id="comment-name"
-            type="text"
-            className="input"
-            value={name}
-            onChange={e => setName(e.target.value)}
-          />
-          {errors.name && <p className="help is-danger">{errors.name}</p>}
-        </div>
+        <input
+          id="comment-name"
+          type="text"
+          placeholder="Name"
+          value={name}
+          onChange={e => setName(e.target.value)}
+        />
       </div>
 
-      <div className="field">
-        <label htmlFor="comment-email" className="label">
+      <div>
+        <label htmlFor="comment-email" className="sr-only">
           Email
         </label>
-        <div className="control">
-          <input
-            id="comment-email"
-            type="email"
-            className="input"
-            value={email}
-            onChange={e => setEmail(e.target.value)}
-          />
-          {errors.email && <p className="help is-danger">{errors.email}</p>}
-        </div>
+        <input
+          id="comment-email"
+          type="email"
+          placeholder="Email"
+          value={email}
+          onChange={e => setEmail(e.target.value)}
+        />
       </div>
 
-      <div className="field">
-        <label htmlFor="comment-body" className="label">
+      <div>
+        <label htmlFor="comment-body" className="sr-only">
           Comment
         </label>
-        <div className="control">
-          <textarea
-            id="comment-body"
-            className="textarea"
-            value={body}
-            onChange={e => setBody(e.target.value)}
-          />
-          {errors.body && <p className="help is-danger">{errors.body}</p>}
-        </div>
+        <textarea
+          id="comment-body"
+          placeholder="Comment"
+          value={body}
+          onChange={e => setBody(e.target.value)}
+        />
       </div>
 
-      <div className="field is-grouped">
-        <div className="control">
-          <button
-            type="submit"
-            className={`button is-link ${isLoading ? 'is-loading' : ''}`}
-          >
-            Add Comment
-          </button>
-        </div>
-        <div className="control">
-          <button
-            type="button"
-            className="button is-light"
-            onClick={handleClear}
-          >
-            Clear
-          </button>
-        </div>
-      </div>
+      <button type="submit">Add comment</button>
     </form>
   );
 };

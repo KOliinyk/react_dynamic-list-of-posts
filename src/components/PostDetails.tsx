@@ -1,83 +1,42 @@
-import { Post } from '../types/Post';
+import React from 'react';
 import { Comment } from '../types/Comment';
-import { Loader } from './Loader';
 import { AddCommentForm } from './AddCommentForm';
+import { CommentsError } from './CommentsError';
 
 type PostDetailsProps = {
-  post: Post;
+  postId: number;
   comments: Comment[];
-  isLoadingComments: boolean;
-  errorComments: string | null;
-  deleteComment: (id: number) => void;
-  isFormVisible: boolean;
-  setIsFormVisible: (visible: boolean) => void;
-  addComment: (comment: Omit<Comment, 'id'>) => void;
-  isLoadingForAdd: boolean;
+  onAddComment: (name: string, email: string, body: string) => void;
+  onDeleteComment: (id: number) => void;
+  error: string | null;
 };
 
 export const PostDetails: React.FC<PostDetailsProps> = ({
-  post,
+  postId,
   comments,
-  isLoadingComments,
-  errorComments,
-  deleteComment,
-  isFormVisible,
-  setIsFormVisible,
-  addComment,
-  isLoadingForAdd,
+  onAddComment,
+  onDeleteComment,
+  error,
 }) => {
   return (
-    <div>
-      <h2 className="title is-4">{post.title}</h2>
-      <p>{post.body}</p>
+    <div className="post-details">
+      <h2>Post #{postId}</h2>
 
-      <hr />
-
-      <h3 className="title is-5">Comments</h3>
-
-      {isLoadingComments && <Loader />}
-      {errorComments && (
-        <div className="notification is-danger">{errorComments}</div>
-      )}
-
-      {!isLoadingComments && !errorComments && comments.length === 0 && (
-        <div className="notification is-warning">No comments</div>
-      )}
+      {error && <CommentsError message={error} />}
 
       <ul>
         {comments.map(comment => (
-          <li key={comment.id} className="box">
+          <li key={comment.id}>
             <p>
               <strong>{comment.name}</strong> ({comment.email})
             </p>
             <p>{comment.body}</p>
-            <button
-              className="button is-small is-danger mt-2"
-              onClick={() => deleteComment(comment.id)}
-            >
-              Delete
-            </button>
+            <button onClick={() => onDeleteComment(comment.id)}>Delete</button>
           </li>
         ))}
       </ul>
 
-      {!isFormVisible && (
-        <button
-          className="button is-link mt-3"
-          onClick={() => setIsFormVisible(true)}
-        >
-          Write a comment
-        </button>
-      )}
-
-      {isFormVisible && (
-        <div className="mt-3">
-          <AddCommentForm
-            onAddComment={addComment}
-            isLoading={isLoadingForAdd}
-          />
-        </div>
-      )}
+      <AddCommentForm onAdd={onAddComment} />
     </div>
   );
 };
