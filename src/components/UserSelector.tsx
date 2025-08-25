@@ -1,56 +1,65 @@
-import React, { ChangeEvent } from 'react';
+// src/components/UserSelector.tsx
+import React, { useState } from 'react';
 import { User } from '../types/User';
-import { Post } from '../types/Post';
 
 type UserSelectorProps = {
   users: User[];
-  getPostsFromServer: (userId: number) => void;
   selectedPerson: User | null;
   setSelectedPerson: (user: User | null) => void;
   setSelectedPost: (post: Post | null) => void;
-  setIsFormVisible: (value: boolean) => void;
+  setIsFormVisible: (visible: boolean) => void;
 };
 
 export const UserSelector: React.FC<UserSelectorProps> = ({
   users,
-  getPostsFromServer,
   selectedPerson,
   setSelectedPerson,
   setSelectedPost,
   setIsFormVisible,
 }) => {
-  const handleChange = (e: ChangeEvent<HTMLSelectElement>) => {
-    const userId = Number(e.target.value);
-    const user = users.find(u => u.id === userId) || null;
+  const [isOpen, setIsOpen] = useState(false);
 
+  const handleSelect = (user: User) => {
     setSelectedPerson(user);
     setSelectedPost(null);
     setIsFormVisible(false);
-
-    if (user) {
-      getPostsFromServer(user.id);
-    }
+    setIsOpen(false);
   };
 
   return (
-    <div className="field">
-      <label htmlFor="user-select" className="label">
-        Select user
-      </label>
-      <div className="control">
-        <div className="select is-fullwidth">
-          <select
-            id="user-select"
-            value={selectedPerson?.id || ''}
-            onChange={handleChange}
-          >
-            <option value="">Choose a user</option>
-            {users.map(user => (
-              <option key={user.id} value={user.id}>
+    <div
+      data-cy="UserSelector"
+      className={`dropdown ${isOpen ? 'is-active' : ''}`}
+    >
+      <div className="dropdown-trigger">
+        <button
+          className="button"
+          aria-haspopup="true"
+          aria-controls="dropdown-menu"
+          onClick={() => setIsOpen(!isOpen)}
+        >
+          <span>{selectedPerson ? selectedPerson.name : 'Choose a user'}</span>
+          <span className="icon is-small">
+            <i className="fas fa-angle-down" aria-hidden="true"></i>
+          </span>
+        </button>
+      </div>
+
+      <div className="dropdown-menu" id="dropdown-menu" role="menu">
+        <div className="dropdown-content">
+          {users.length > 0 ? (
+            users.map(user => (
+              <a
+                key={user.id}
+                className="dropdown-item"
+                onClick={() => handleSelect(user)}
+              >
                 {user.name}
-              </option>
-            ))}
-          </select>
+              </a>
+            ))
+          ) : (
+            <div className="dropdown-item">No users available</div>
+          )}
         </div>
       </div>
     </div>

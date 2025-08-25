@@ -39,12 +39,16 @@ export const App = () => {
   const isUserSelected = !!selectedPerson;
   const isPostSelected = !!selectedPost;
 
-  useEffect(() => setIsFormVisible(false), [selectedPost]);
+  useEffect(() => {
+    if (!selectedPost) {
+      setIsFormVisible(false);
+    }
+  }, [selectedPost]);
 
+  const hasPosts = posts.length > 0;
+  const shouldShowPostsList = isUserSelected && hasPosts && !isLoadingPosts;
   const shouldShowNoPostsYet =
-    isUserSelected && posts.length === 0 && !isLoadingPosts && !errorPosts;
-  const shouldShowPostsList =
-    isUserSelected && posts.length > 0 && !isLoadingPosts;
+    isUserSelected && !hasPosts && !isLoadingPosts && !errorPosts;
 
   return (
     <main className="section">
@@ -53,6 +57,7 @@ export const App = () => {
           <div className="tile is-parent">
             <div className="tile is-child box is-success">
               <UserSelector
+                data-cy="UserSelector" // для Cypress
                 users={users}
                 getPostsFromServer={getPostsFromServer}
                 selectedPerson={selectedPerson}
@@ -65,12 +70,16 @@ export const App = () => {
                 {!isUserSelected && (
                   <p data-cy="NoSelectedUser">No user selected</p>
                 )}
-                {isLoadingPosts && <Loader />}
+                {isLoadingPosts && <Loader data-cy="LoaderPosts" />}
                 {errorPosts && (
-                  <div className="notification is-danger">{errorPosts}</div>
+                  <div className="notification is-danger" data-cy="ErrorPosts">
+                    {errorPosts}
+                  </div>
                 )}
                 {shouldShowNoPostsYet && (
-                  <div className="notification is-warning">No posts yet</div>
+                  <div className="notification is-warning" data-cy="NoPostsYet">
+                    No posts yet
+                  </div>
                 )}
                 {shouldShowPostsList && (
                   <PostsList
@@ -79,6 +88,7 @@ export const App = () => {
                     setSelectedPost={setSelectedPost}
                     getCommentsFromServer={getCommentsFromServer}
                     setIsFormVisible={setIsFormVisible}
+                    data-cy="PostsList" // для Cypress
                   />
                 )}
               </div>
@@ -91,9 +101,9 @@ export const App = () => {
             })}
           >
             <div className="tile is-child box is-success">
-              {isPostSelected && (
+              {isPostSelected && selectedPost && (
                 <PostDetails
-                  post={selectedPost!}
+                  post={selectedPost}
                   comments={comments}
                   isLoadingComments={isLoadingComments}
                   errorComments={errorComments}
@@ -102,6 +112,7 @@ export const App = () => {
                   setIsFormVisible={setIsFormVisible}
                   addComment={addComment}
                   isLoadingForAdd={isLoadingForAdd}
+                  data-cy="PostDetails" // для Cypress
                 />
               )}
             </div>
