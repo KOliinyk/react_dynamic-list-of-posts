@@ -1,8 +1,8 @@
-// src/components/UserSelector.tsx
 import React, { useState } from 'react';
 import { User } from '../types/User';
+import { Post } from '../types/Post';
 
-type UserSelectorProps = {
+type Props = {
   users: User[];
   selectedPerson: User | null;
   setSelectedPerson: (user: User | null) => void;
@@ -10,7 +10,7 @@ type UserSelectorProps = {
   setIsFormVisible: (visible: boolean) => void;
 };
 
-export const UserSelector: React.FC<UserSelectorProps> = ({
+export const UserSelector: React.FC<Props> = ({
   users,
   selectedPerson,
   setSelectedPerson,
@@ -19,18 +19,8 @@ export const UserSelector: React.FC<UserSelectorProps> = ({
 }) => {
   const [isOpen, setIsOpen] = useState(false);
 
-  const handleSelect = (user: User) => {
-    setSelectedPerson(user);
-    setSelectedPost(null);
-    setIsFormVisible(false);
-    setIsOpen(false);
-  };
-
   return (
-    <div
-      data-cy="UserSelector"
-      className={`dropdown ${isOpen ? 'is-active' : ''}`}
-    >
+    <div className={`dropdown ${isOpen ? 'is-active' : ''}`}>
       <div className="dropdown-trigger">
         <button
           className="button"
@@ -47,19 +37,22 @@ export const UserSelector: React.FC<UserSelectorProps> = ({
 
       <div className="dropdown-menu" id="dropdown-menu" role="menu">
         <div className="dropdown-content">
-          {users.length > 0 ? (
-            users.map(user => (
-              <a
-                key={user.id}
-                className="dropdown-item"
-                onClick={() => handleSelect(user)}
-              >
-                {user.name}
-              </a>
-            ))
-          ) : (
-            <div className="dropdown-item">No users available</div>
-          )}
+          {users.map(user => (
+            <a
+              key={user.id}
+              className={`dropdown-item ${
+                selectedPerson?.id === user.id ? 'is-active' : ''
+              }`}
+              onClick={() => {
+                setSelectedPerson(user);
+                setSelectedPost(null);
+                setIsFormVisible(false);
+                setIsOpen(false);
+              }}
+            >
+              {user.name}
+            </a>
+          ))}
         </div>
       </div>
     </div>
