@@ -20,7 +20,10 @@ export const UserSelector: React.FC<Props> = ({
   const [isOpen, setIsOpen] = useState(false);
 
   return (
-    <div className={`dropdown ${isOpen ? 'is-active' : ''}`}>
+    <div
+      className={`dropdown ${isOpen ? 'is-active' : ''}`}
+      data-cy="UserSelector"   // 👈 додали для Cypress
+    >
       <div className="dropdown-trigger">
         <button
           className="button"
@@ -28,7 +31,9 @@ export const UserSelector: React.FC<Props> = ({
           aria-controls="dropdown-menu"
           onClick={() => setIsOpen(!isOpen)}
         >
-          <span>{selectedPerson ? selectedPerson.name : 'Choose a user'}</span>
+          <span>
+            {selectedPerson ? selectedPerson.name : 'Choose a user'}
+          </span>
           <span className="icon is-small">
             <i className="fas fa-angle-down" aria-hidden="true"></i>
           </span>
