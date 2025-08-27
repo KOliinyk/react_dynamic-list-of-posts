@@ -1,48 +1,62 @@
 import { useState } from 'react';
-import {
-  getComments,
-  addComment as apiAddComment,
-  deleteComment as apiDeleteComment,
-} from '../api';
-import { Comment } from '../types/Comment';
+import { Comment, CommentData } from '../types/Comment';
+import { ServiceErrors, ServiceErrorsValues } from '../types/Errors';
+import { client } from '../utils/fetchClient';
 
 export const useComments = () => {
   const [comments, setComments] = useState<Comment[]>([]);
-  const [isLoading, setIsLoading] = useState(false);
-  const [error, setError] = useState<string | null>(null);
-  const [isLoadingForAdd, setIsLoadingForAdd] = useState(false);
+  const [isLoading, setIsLoading] = useState<boolean>(false);
+  const [isLoadingForAdd, setIsLoadingForAdd] = useState<boolean>(false);
+  const [error, setError] = useState<ServiceErrorsValues | null>(null);
 
-  const getCommentsFromServer = (postId: number) => {
-    setIsLoading(true);
+  async function getCommentsFromServer(postId: number) {
     setError(null);
-    getComments()
-      .then(allComments =>
-        setComments(allComments.filter(c => c.postId === postId)),
-      )
-      .catch(() => setError('Failed to load comments'))
-      .finally(() => setIsLoading(false));
-  };
+    setIsLoading(true);
 
-  const addComment = (comment: Omit<Comment, 'id'>) => {
+    try {
+      const arrayOfComments: Comment[] = await client.get(
+        `/comments?postId=${postId}`,
+      );
+
+      setComments(arrayOfComments);
+    } catch {
+      setError(ServiceErrors.Unknown);
+    } finally {
+      setIsLoading(false);
+    }
+  }
+
+  async function deleteComment(commentId: number) {
+    try {
+      await client.delete(`/comments/${commentId}`);
+
+      setComments(prev => [...prev].filter(com => com.id !== commentId));
+    } catch {
+      throw new Error(ServiceErrors.Unknown);
+    }
+  }
+
+  async function addComment(newComment: CommentData) {
     setIsLoadingForAdd(true);
 
-    return apiAddComment(comment)
-      .then(c => setComments(prev => [...prev, c]))
-      .finally(() => setIsLoadingForAdd(false));
-  };
+    try {
+      const comment: Comment = await client.post('/comments', newComment);
 
-  const deleteComment = (id: number) => {
-    setComments(prev => prev.filter(c => c.id !== id));
-    apiDeleteComment(id).catch(() => alert('Failed to delete comment'));
-  };
+      setComments(prev => [...prev, comment]);
+    } catch {
+      throw new Error(ServiceErrors.Unknown);
+    } finally {
+      setIsLoadingForAdd(false);
+    }
+  }
 
   return {
+    getCommentsFromServer,
     comments,
     isLoading,
     error,
-    getCommentsFromServer,
-    addComment,
     deleteComment,
+    addComment,
     isLoadingForAdd,
   };
 };

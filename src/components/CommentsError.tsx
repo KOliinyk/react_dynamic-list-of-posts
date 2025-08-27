@@ -5,7 +5,10 @@ type CommentsErrorProps = {
 };
 
 export const CommentsError: React.FC<CommentsErrorProps> = ({ message }) => (
-  <div className="comments-error">
+  <div
+    className="notification is-danger comments-error"
+    data-cy="CommentsError"
+  >
     <p>{message}</p>
   </div>
 );

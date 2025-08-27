@@ -1,42 +1,91 @@
-import React from 'react';
-import { Comment } from '../types/Comment';
-import { AddCommentForm } from './AddCommentForm';
-import { CommentsError } from './CommentsError';
+import { Post } from '../types/Post';
+import { Comment, CommentData } from '../types/Comment';
+import { ServiceErrorsValues } from '../types/Errors';
+import { Loader } from './Loader';
+import { CommentsList } from './CommentsList';
+import { NewCommentForm } from './NewCommentForm';
 
-type PostDetailsProps = {
-  postId: number;
+interface Props {
+  post: Post | null;
   comments: Comment[];
-  onAddComment: (name: string, email: string, body: string) => void;
-  onDeleteComment: (id: number) => void;
-  error: string | null;
-};
+  isLoadingComments: boolean;
+  errorComments: ServiceErrorsValues | null;
+  deleteComment: (commentId: number) => Promise<void>;
+  setIsFormVisible: (value: boolean) => void;
+  isFormVisible: boolean;
+  addComment: (value: CommentData) => Promise<void>;
+  isLoadingForAdd: boolean;
+}
 
-export const PostDetails: React.FC<PostDetailsProps> = ({
-  postId,
+export const PostDetails: React.FC<Props> = ({
+  post,
   comments,
-  onAddComment,
-  onDeleteComment,
-  error,
+  isLoadingComments,
+  errorComments,
+  deleteComment,
+  setIsFormVisible,
+  isFormVisible,
+  addComment,
+  isLoadingForAdd,
 }) => {
+  const shouldShowNoCommentsYet =
+    comments.length === 0 && !isLoadingComments && errorComments === null;
+  const shouldShowButtonNewPost =
+    post !== null &&
+    !isFormVisible &&
+    errorComments === null &&
+    !isLoadingComments;
+  const shouldShowComments =
+    post !== null && comments.length > 0 && !isLoadingComments;
+
   return (
-    <div className="post-details">
-      <h2>Post #{postId}</h2>
+    <div className="content" data-cy="PostDetails">
+      <div className="content" data-cy="PostDetails">
+        <div className="block">
+          <h2 data-cy="PostTitle">{`#${post?.id}: ${post?.title}`}</h2>
 
-      {error && <CommentsError message={error} />}
+          <p data-cy="PostBody">{post?.body}</p>
+        </div>
 
-      <ul>
-        {comments.map(comment => (
-          <li key={comment.id}>
-            <p>
-              <strong>{comment.name}</strong> ({comment.email})
+        <div className="block">
+          {isLoadingComments && <Loader />}
+
+          {errorComments && (
+            <div className="notification is-danger" data-cy="CommentsError">
+              Something went wrong
+            </div>
+          )}
+
+          {shouldShowNoCommentsYet && (
+            <p className="title is-4" data-cy="NoCommentsMessage">
+              No comments yet
             </p>
-            <p>{comment.body}</p>
-            <button onClick={() => onDeleteComment(comment.id)}>Delete</button>
-          </li>
-        ))}
-      </ul>
+          )}
 
-      <AddCommentForm onAdd={onAddComment} />
+          {shouldShowComments && (
+            <CommentsList comments={comments} deleteComment={deleteComment} />
+          )}
+
+          {shouldShowButtonNewPost && (
+            <button
+              data-cy="WriteCommentButton"
+              type="button"
+              className="button is-link"
+              onClick={() => setIsFormVisible(true)}
+            >
+              Write a comment
+            </button>
+          )}
+        </div>
+
+        {isFormVisible && (
+          <NewCommentForm
+            addComment={addComment}
+            isLoadingForAdd={isLoadingForAdd}
+            postId={post?.id}
+          />
+        )}
+      </div>
     </div>
   );
 };

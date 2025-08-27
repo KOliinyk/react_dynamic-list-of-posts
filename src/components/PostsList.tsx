@@ -1,14 +1,14 @@
-// src/components/PostsList.tsx
 import React from 'react';
 import { Post } from '../types/Post';
+import { PostItem } from './PostItem';
 
-type Props = {
+interface Props {
   posts: Post[];
   selectedPost: Post | null;
-  setSelectedPost: (post: Post) => void;
-  getCommentsFromServer: (postId: number) => void;
-  setIsFormVisible: (v: boolean) => void;
-};
+  setSelectedPost: (post: Post | null) => void;
+  getCommentsFromServer: (postId: number) => Promise<void>;
+  setIsFormVisible: (value: boolean) => void;
+}
 
 export const PostsList: React.FC<Props> = ({
   posts,
@@ -16,33 +16,32 @@ export const PostsList: React.FC<Props> = ({
   setSelectedPost,
   getCommentsFromServer,
   setIsFormVisible,
-}) => {
-  const handleClick = (post: Post) => {
-    setSelectedPost(post);
-    setIsFormVisible(false);
-    getCommentsFromServer(post.id);
-  };
+}) => (
+  <div data-cy="PostsList">
+    <p className="title">Posts:</p>
 
-  return (
-    <div className="table-container">
-      <table className="table is-fullwidth is-hoverable">
-        <thead>
-          <tr>
-            <th>Title</th>
-          </tr>
-        </thead>
-        <tbody>
-          {posts.map(post => (
-            <tr
-              key={post.id}
-              onClick={() => handleClick(post)}
-              className={selectedPost?.id === post.id ? 'is-selected' : ''}
-            >
-              <td>{post.title}</td>
-            </tr>
-          ))}
-        </tbody>
-      </table>
-    </div>
-  );
-};
+    <table className="table is-fullwidth is-striped is-hoverable is-narrow">
+      <thead>
+        <tr className="has-background-link-light">
+          <th>#</th>
+          <th>Title</th>
+
+          <th> </th>
+        </tr>
+      </thead>
+
+      <tbody>
+        {posts.map(post => (
+          <PostItem
+            key={post.id}
+            post={post}
+            selectedPost={selectedPost}
+            setSelectedPost={setSelectedPost}
+            getCommentsFromServer={getCommentsFromServer}
+            setIsFormVisible={setIsFormVisible}
+          />
+        ))}
+      </tbody>
+    </table>
+  </div>
+);

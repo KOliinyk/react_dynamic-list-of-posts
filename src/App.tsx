@@ -1,4 +1,3 @@
-// src/App.tsx
 import 'bulma/css/bulma.css';
 import '@fortawesome/fontawesome-free/css/all.css';
 import './App.scss';
@@ -57,7 +56,7 @@ export const App = () => {
           <div className="tile is-parent">
             <div className="tile is-child box is-success">
               <UserSelector
-                data-cy="UserSelector" // для Cypress
+                data-cy="UserSelector"
                 users={users}
                 getPostsFromServer={getPostsFromServer}
                 selectedPerson={selectedPerson}
@@ -88,7 +87,7 @@ export const App = () => {
                     setSelectedPost={setSelectedPost}
                     getCommentsFromServer={getCommentsFromServer}
                     setIsFormVisible={setIsFormVisible}
-                    data-cy="PostsList" // для Cypress
+                    data-cy="PostsList"
                   />
                 )}
               </div>
@@ -112,7 +111,7 @@ export const App = () => {
                   setIsFormVisible={setIsFormVisible}
                   addComment={addComment}
                   isLoadingForAdd={isLoadingForAdd}
-                  data-cy="PostDetails" // для Cypress
+                  data-cy="PostDetails"
                 />
               )}
             </div>

@@ -1,18 +1,34 @@
 import React from 'react';
 import { User } from '../types/User';
+import cn from 'classnames';
 
-type UserItemProps = {
+interface Props {
   user: User;
-  setSelectedPerson: (user: User) => void;
-};
+  onSelectedUser: (user: User) => void;
+  selectedPerson: User | null;
+}
 
-export const UserItem: React.FC<UserItemProps> = ({
+export const UserItem: React.FC<Props> = ({
   user,
-  setSelectedPerson,
+  onSelectedUser,
+  selectedPerson,
 }) => {
+  const isUserActive = selectedPerson?.id === user.id;
+
+  function handleSelectedUser(
+    event: React.MouseEvent<HTMLAnchorElement, MouseEvent>,
+  ) {
+    event.preventDefault();
+    onSelectedUser(user);
+  }
+
   return (
-    <li>
-      <button onClick={() => setSelectedPerson(user)}>{user.name}</button>
-    </li>
+    <a
+      href={`#user-${user.id}`}
+      className={cn('dropdown-item', { 'is-active': isUserActive })}
+      onClick={handleSelectedUser}
+    >
+      {user.name}
+    </a>
   );
 };

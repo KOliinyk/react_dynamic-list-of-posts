@@ -1,25 +1,39 @@
 import React from 'react';
 import { User } from '../types/User';
-import { UserItem } from './UserItem'; // обов’язково вказати розширення .tsx, якщо потрібне
+import { UserItem } from './UserItem';
+import cn from 'classnames';
 
-type UserListProps = {
+interface Props {
   users: User[];
-  setSelectedPerson: (user: User) => void;
-};
+  onSelectedUser: (user: User) => void;
+  isVisible: boolean;
+  selectedPerson: User | null;
+}
 
-export const UserList: React.FC<UserListProps> = ({
+export const UserList: React.FC<Props> = ({
   users,
-  setSelectedPerson,
+  onSelectedUser,
+  isVisible,
+  selectedPerson,
 }) => {
   return (
-    <ul>
-      {users.map(user => (
-        <UserItem
-          key={user.id}
-          user={user}
-          setSelectedPerson={setSelectedPerson}
-        />
-      ))}
-    </ul>
+    <div
+      className={cn('dropdown-menu', {
+        'is-hidden': !isVisible,
+      })}
+      id="dropdown-menu"
+      role="menu"
+    >
+      <div className="dropdown-content">
+        {users.map(user => (
+          <UserItem
+            key={user.id}
+            user={user}
+            onSelectedUser={onSelectedUser}
+            selectedPerson={selectedPerson}
+          />
+        ))}
+      </div>
+    </div>
   );
 };

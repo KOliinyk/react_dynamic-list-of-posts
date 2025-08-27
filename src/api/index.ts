@@ -1,4 +1,3 @@
-// src/api/index.ts
 import { client } from '../utils/fetchClient';
 import { User } from '../types/User';
 import { Post } from '../types/Post';
