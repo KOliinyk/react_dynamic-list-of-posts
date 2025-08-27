@@ -1,15 +1,18 @@
-.Sidebar {
-  transition: all 0.3s ease;
-  overflow: hidden;
-  width: 0;
-}
+.App {
+  .Sidebar {
+    transition: all 0.3s ease;
+    overflow: hidden;
+    width: 0;
+    &.Sidebar--open {
+      width: 100%;
+    }
+  }
 
-.Sidebar--open {
-  width: 100%; 
-}
-
-@media (min-width: 1024px) {
-  .Sidebar--open {
-    width: 66%;
+  @media (min-width: 1024px) {
+    .Sidebar {
+      &.Sidebar--open {
+        width: 50%;
+      }
+    }
   }
 }

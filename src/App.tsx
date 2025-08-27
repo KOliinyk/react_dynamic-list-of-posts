@@ -39,15 +39,24 @@ export const App = () => {
   const isPostSelected = !!selectedPost;
 
   useEffect(() => {
-    if (!selectedPost) {
-      setIsFormVisible(false);
-    }
+    if (!selectedPost) setIsFormVisible(false);
   }, [selectedPost]);
 
   const hasPosts = posts.length > 0;
   const shouldShowPostsList = isUserSelected && hasPosts && !isLoadingPosts;
   const shouldShowNoPostsYet =
     isUserSelected && !hasPosts && !isLoadingPosts && !errorPosts;
+
+  // Виклик завантаження постів із штучною затримкою для тесту
+  const handleGetPosts = async (userId: number) => {
+    if (!getPostsFromServer) return;
+    // Додаємо невелику затримку, щоб лоадер встиг показатися
+    const loadPosts = async () => {
+      await new Promise((r) => setTimeout(r, 500));
+      await getPostsFromServer(userId);
+    };
+    loadPosts();
+  };
 
   return (
     <main className="section">
@@ -58,7 +67,7 @@ export const App = () => {
               <UserSelector
                 data-cy="UserSelector"
                 users={users}
-                getPostsFromServer={getPostsFromServer}
+                getPostsFromServer={handleGetPosts}
                 selectedPerson={selectedPerson}
                 setSelectedPerson={setSelectedPerson}
                 setSelectedPost={setSelectedPost}
@@ -66,26 +75,30 @@ export const App = () => {
               />
 
               <div className="block" data-cy="MainContent">
-                {!isUserSelected && (
-                  <p data-cy="NoSelectedUser">No user selected</p>
-                )}
-                {isLoadingPosts && <Loader data-cy="LoaderPosts" />}
+                {!isUserSelected && <p data-cy="NoSelectedUser">No user selected</p>}
+
+                {isLoadingPosts && <Loader data-cy="Loader" />}
+
                 {errorPosts && (
                   <div className="notification is-danger" data-cy="ErrorPosts">
                     {errorPosts}
                   </div>
                 )}
+
                 {shouldShowNoPostsYet && (
                   <div className="notification is-warning" data-cy="NoPostsYet">
                     No posts yet
                   </div>
                 )}
+
                 {shouldShowPostsList && (
                   <PostsList
                     posts={posts}
                     selectedPost={selectedPost}
-                    setSelectedPost={setSelectedPost}
-                    getCommentsFromServer={getCommentsFromServer}
+                    setSelectedPost={(post) => {
+                      setSelectedPost(post);
+                      getCommentsFromServer(post.id);
+                    }}
                     setIsFormVisible={setIsFormVisible}
                     data-cy="PostsList"
                   />
