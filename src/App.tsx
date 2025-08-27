@@ -11,7 +11,6 @@ import { useComments } from './hooks/useComments';
 import { User } from './types/User';
 import { Post } from './types/Post';
 import { useState, useEffect } from 'react';
-import cn from 'classnames';
 
 export const App = () => {
   const { users } = useUser();
@@ -20,6 +19,7 @@ export const App = () => {
     isLoading: isLoadingPosts,
     error: errorPosts,
     getPostsFromServer,
+    setIsLoading: setPostsLoading,
   } = usePosts();
   const {
     comments,
@@ -39,97 +39,90 @@ export const App = () => {
   const isPostSelected = !!selectedPost;
 
   useEffect(() => {
-    if (!selectedPost) setIsFormVisible(false);
+    if (!selectedPost) {
+      setIsFormVisible(false);
+    }
   }, [selectedPost]);
 
+  const handleGetPosts = async (userId: number) => {
+    if (!getPostsFromServer) {
+      return;
+    }
+
+    if (setPostsLoading) {
+      setPostsLoading(true);
+    }
+
+    await new Promise(r => setTimeout(r, 500));
+    await getPostsFromServer(userId);
+
+    if (setPostsLoading) {
+      setPostsLoading(false);
+    }
+  };
+
+  const handleSelectPost = (post: Post) => {
+    setSelectedPost(post);
+    getCommentsFromServer(post.id);
+    setIsFormVisible(true);
+  };
+
   const hasPosts = posts.length > 0;
-  const shouldShowPostsList = isUserSelected && hasPosts && !isLoadingPosts;
+  const shouldShowPostsList = isUserSelected && hasPosts;
   const shouldShowNoPostsYet =
     isUserSelected && !hasPosts && !isLoadingPosts && !errorPosts;
 
-  // Виклик завантаження постів із штучною затримкою для тесту
-  const handleGetPosts = async (userId: number) => {
-    if (!getPostsFromServer) return;
-    // Додаємо невелику затримку, щоб лоадер встиг показатися
-    const loadPosts = async () => {
-      await new Promise((r) => setTimeout(r, 500));
-      await getPostsFromServer(userId);
-    };
-    loadPosts();
-  };
-
   return (
     <main className="section">
-      <div className="container">
-        <div className="tile is-ancestor">
-          <div className="tile is-parent">
-            <div className="tile is-child box is-success">
-              <UserSelector
-                data-cy="UserSelector"
-                users={users}
-                getPostsFromServer={handleGetPosts}
-                selectedPerson={selectedPerson}
-                setSelectedPerson={setSelectedPerson}
-                setSelectedPost={setSelectedPost}
+      <div className={`app-container ${isPostSelected ? 'with-sidebar' : ''}`}>
+        <div className="left-panel box">
+          <UserSelector
+            data-cy="UserSelector"
+            users={users}
+            getPostsFromServer={handleGetPosts}
+            selectedPerson={selectedPerson}
+            setSelectedPerson={setSelectedPerson}
+            setSelectedPost={setSelectedPost}
+            setIsFormVisible={setIsFormVisible}
+          />
+
+          <div className="content-area" data-cy="MainContent">
+            {!isUserSelected && (
+              <p data-cy="NoSelectedUser">No user selected</p>
+            )}
+            {isLoadingPosts && <Loader data-cy="Loader" />}
+            {errorPosts && (
+              <div className="notification is-danger">{errorPosts}</div>
+            )}
+            {shouldShowNoPostsYet && (
+              <div className="notification is-warning">No posts yet</div>
+            )}
+            {shouldShowPostsList && (
+              <PostsList
+                posts={posts}
+                selectedPost={selectedPost}
+                setSelectedPost={handleSelectPost}
                 setIsFormVisible={setIsFormVisible}
               />
-
-              <div className="block" data-cy="MainContent">
-                {!isUserSelected && <p data-cy="NoSelectedUser">No user selected</p>}
-
-                {isLoadingPosts && <Loader data-cy="Loader" />}
-
-                {errorPosts && (
-                  <div className="notification is-danger" data-cy="ErrorPosts">
-                    {errorPosts}
-                  </div>
-                )}
-
-                {shouldShowNoPostsYet && (
-                  <div className="notification is-warning" data-cy="NoPostsYet">
-                    No posts yet
-                  </div>
-                )}
-
-                {shouldShowPostsList && (
-                  <PostsList
-                    posts={posts}
-                    selectedPost={selectedPost}
-                    setSelectedPost={(post) => {
-                      setSelectedPost(post);
-                      getCommentsFromServer(post.id);
-                    }}
-                    setIsFormVisible={setIsFormVisible}
-                    data-cy="PostsList"
-                  />
-                )}
-              </div>
-            </div>
-          </div>
-
-          <div
-            className={cn('tile', 'is-parent', 'is-8-desktop', 'Sidebar', {
-              'Sidebar--open': isPostSelected,
-            })}
-          >
-            <div className="tile is-child box is-success">
-              {isPostSelected && selectedPost && (
-                <PostDetails
-                  post={selectedPost}
-                  comments={comments}
-                  isLoadingComments={isLoadingComments}
-                  errorComments={errorComments}
-                  deleteComment={deleteComment}
-                  isFormVisible={isFormVisible}
-                  setIsFormVisible={setIsFormVisible}
-                  addComment={addComment}
-                  isLoadingForAdd={isLoadingForAdd}
-                  data-cy="PostDetails"
-                />
-              )}
-            </div>
+            )}
           </div>
         </div>
+
+        {isPostSelected && selectedPost && (
+          <div className="right-panel box">
+            <PostDetails
+              post={selectedPost}
+              comments={comments}
+              isLoadingComments={isLoadingComments}
+              errorComments={errorComments}
+              deleteComment={deleteComment}
+              isFormVisible={isFormVisible}
+              setIsFormVisible={setIsFormVisible}
+              addComment={addComment}
+              isLoadingForAdd={isLoadingForAdd}
+            />
+          </div>
+        )}
       </div>
     </main>
   );
