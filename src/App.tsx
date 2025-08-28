@@ -53,7 +53,6 @@ export const App = () => {
       setPostsLoading(true);
     }
 
-    await new Promise(r => setTimeout(r, 500));
     await getPostsFromServer(userId);
 
     if (setPostsLoading) {
