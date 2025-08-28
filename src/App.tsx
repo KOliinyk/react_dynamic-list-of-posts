@@ -11,6 +11,7 @@ import { useComments } from './hooks/useComments';
 import { User } from './types/User';
 import { Post } from './types/Post';
 import { useState, useEffect } from 'react';
+import cn from 'classnames';
 
 export const App = () => {
   const { users } = useUser();
@@ -53,8 +54,8 @@ export const App = () => {
       setPostsLoading(true);
     }
 
+    await new Promise(r => setTimeout(r, 500));
     await getPostsFromServer(userId);
-
     if (setPostsLoading) {
       setPostsLoading(false);
     }
@@ -74,7 +75,9 @@ export const App = () => {
   return (
     <main className="section">
       <div className={`app-container ${isPostSelected ? 'with-sidebar' : ''}`}>
-        <div className="left-panel box">
+        <div
+          className={cn('left-panel', 'box', { 'full-width': !isPostSelected })}
+        >
           <UserSelector
             data-cy="UserSelector"
             users={users}
